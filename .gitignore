@@ -1,0 +1,21 @@
+# ignore the medias untill final commit
+Resources/
+
+# Ignore build output folders
+/bin/
+/obj/
+
+# Ignore user-specific project files
+*.user
+*.suo
+
+# Ignore Visual Studio cache and temp files
+.vs/
+*.log
+
+# Ignore NuGet packages folder if present
+packages/
+
+# Ignore build generated database, if any
+*.mdf
+*.ldf
