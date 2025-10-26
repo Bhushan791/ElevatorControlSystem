@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using ElevatorControlSystem.Core;  // To access Lift class
-using ElevatorControlSystem.UI;    // To access Form1 class
+using ElevatorControlSystem.Core;
+using ElevatorControlSystem.UI;
 
 namespace ElevatorControlSystem.States
 {
     internal class CloseDoorState : ILiftState
     {
+        private bool soundStarted = false; // Track if sound already started
+
         public void MovingDown(Lift lift)
         {
             /* Do Nothing */
@@ -25,6 +27,13 @@ namespace ElevatorControlSystem.States
 
         public void CloseDoor(Lift lift)
         {
+            // PLAY DOOR CLOSING SOUND - Only once when doors start closing
+            if (!soundStarted)
+            {
+                lift.MainForm.soundDoorClose?.Play();
+                soundStarted = true;
+            }
+
             // Get the Form instance
             Form1 form = lift.MainElevator.FindForm() as Form1;
             if (form == null) return;

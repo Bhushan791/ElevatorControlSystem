@@ -1,16 +1,25 @@
 ﻿using System;
 using System.Drawing;
-using ElevatorControlSystem.Core;  // ADD THIS LINE
-using ElevatorControlSystem.UI;    // ADD THIS LINE
+using ElevatorControlSystem.Core;
+using ElevatorControlSystem.UI;
 
 namespace ElevatorControlSystem.States
 {
     internal class MovingUpState : ILiftState
     {
+        private bool soundStarted = false; // Track if sound already started
+
         public void MovingUp(Lift lift)
         {
-            // Define the target position for floor 2 (adjust this value to fit properly)
-            int floor2Position = 93; // Change this to 85, 90, or whatever fits best visually
+            // START LIFT MOVING SOUND - Only once when movement begins
+            if (!soundStarted)
+            {
+                lift.MainForm.soundLiftMoving?.PlayLooping(); // Loop the motor sound
+                soundStarted = true;
+            }
+
+            // Define the target position for floor 2
+            int floor2Position = 93;
             
             // Move the elevator up if it hasn't reached the top
             if (lift.MainElevator.Top > floor2Position)
@@ -19,6 +28,9 @@ namespace ElevatorControlSystem.States
             }
             else
             {
+                // STOP LIFT MOVING SOUND
+                lift.MainForm.soundLiftMoving?.Stop();
+
                 // Reached the top floor
                 lift.SetState(new IdleState());
                 lift.MainElevator.Top = floor2Position; // Set exact position
@@ -30,15 +42,23 @@ namespace ElevatorControlSystem.States
                 lift.Btn_1.Enabled = true;
                 lift.MainForm.UpdateFloorDisplay(2);
 
+                // PLAY ARRIVAL DING SOUND
+                lift.MainForm.soundLiftArrived?.Play();
+
                 // Log that the lift has reached the top
                 lift.MainForm.logEvents("Lift reached 2nd floor. Doors opening...");
 
-                // Start the door opening process
-                lift.SetState(new OpenDoorState());
-                lift.OpenDoorTimer.Start();
-
-                // Start the auto door close timer
-                lift.AutoDoorTimer.Start();
+                // DELAY BEFORE OPENING DOORS - Let the full "ding dong" sound play (1 second)
+                System.Threading.Tasks.Task.Delay(1300).ContinueWith(_ => 
+                {
+                    lift.MainForm.Invoke((System.Action)(() =>
+                    {
+                        // Start the door opening process after delay
+                        lift.SetState(new OpenDoorState());
+                        lift.OpenDoorTimer.Start();
+                        lift.AutoDoorTimer.Start();
+                    }));
+                });
             }
         }
 
