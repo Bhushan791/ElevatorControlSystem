@@ -427,7 +427,7 @@ namespace ElevatorControlSystem.UI
 
         public void btn_G_click(object sender, EventArgs e)
         {
-            soundButtonPress?.Play(); // PLAY BUTTON SOUND
+            soundButtonPress?.Play(); // PLAY BUTTON SOUND beep
 
             lift.SetState(new MovingDownState());
             btn_G.BackColor = Color.LightGreen;
