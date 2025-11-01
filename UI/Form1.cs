@@ -1,11 +1,9 @@
-
-
 using System;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Media; // ADD THIS - For SoundPlayer
+using System.Media;
 using ElevatorControlSystem.Core;
 using ElevatorControlSystem.Data;
 using ElevatorControlSystem.States;
@@ -31,7 +29,7 @@ namespace ElevatorControlSystem.UI
         // BackgroundWorker for database operations
         private BackgroundWorker bgWorker;
 
-        // SOUND PLAYERS - ADD THESE
+        // SOUND PLAYERS
         public SoundPlayer soundButtonPress;
         public SoundPlayer soundLiftMoving;
         public SoundPlayer soundLiftArrived;
@@ -41,16 +39,17 @@ namespace ElevatorControlSystem.UI
         public Form1()
         {
             InitializeComponent();
+            //  this.WindowState = FormWindowState.Maximized;  ///maximised window
 
             // Initialize BackgroundWorker
             bgWorker = new BackgroundWorker();
             bgWorker.DoWork += BgWorker_DoWork;
             bgWorker.RunWorkerCompleted += BgWorker_RunWorkerCompleted;
 
-            // INITIALIZE SOUNDS - ADD THIS
+            // INITIALIZE SOUNDS
             InitializeSounds();
 
-            lift = new Lift(mainElevator, btn_1, btn_G, btnCall1, btnCall2, this.ClientSize.Height, liftSpeed, liftTimerUp, liftTimerDown, openDoorTimer, closeDoorTimer, autoDoorTimer, this);
+            lift = new Lift(mainElevator, cabinDoor, btn_1, btn_G, btnCall1, btnCall2, this.ClientSize.Height, liftSpeed, liftTimerUp, liftTimerDown, openDoorTimer, closeDoorTimer, autoDoorTimer, this);
 
             doorMaxOpenWidth = mainElevator.Width / 2 + 80;
 
@@ -65,7 +64,7 @@ namespace ElevatorControlSystem.UI
             autoDoorTimer.Tick += autoDoorTimer_Tick;
         }
 
-        // NEW METHOD - Initialize all sound effects
+        // Initialize all sound effects
         private void InitializeSounds()
         {
             try
@@ -77,7 +76,7 @@ namespace ElevatorControlSystem.UI
                 soundDoorClose = new SoundPlayer("Resources/door_close.wav");
 
                 // Load sounds into memory for faster playback
-                soundButtonPress.Load();
+            
                 soundLiftMoving.Load();
                 soundLiftArrived.Load();
                 soundDoorOpen.Load();
@@ -152,9 +151,91 @@ namespace ElevatorControlSystem.UI
             lblFloorDisplay.Text = floor.ToString();
         }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// SEND CABIN BEHIND FLOORS (when moving)
+public void SendCabinBehindFloors()
+{
+    mainElevator.SendToBack();
+    cabinDoor.SendToBack();
+    mainElevator.SendToBack();
+    
+    pictureBox1.BringToFront();
+    pictureBox2.BringToFront();
+    
+    // BRING LABELS TO FRONT so they're not covered
+    label1.BringToFront();
+    label2.BringToFront();
+    
+    doorLeft_G.BringToFront();
+    doorRight_G.BringToFront();
+    doorLeft_1.BringToFront();
+    doorRight_1.BringToFront();
+}
+
+// BRING CABIN IN FRONT OF FLOORS (when stopped)
+public void BringCabinInFrontOfFloors()
+{
+    pictureBox1.SendToBack();
+    pictureBox2.SendToBack();
+    
+    mainElevator.BringToFront();
+    cabinDoor.BringToFront();
+    
+    // BRING LABELS TO FRONT here too
+    label1.BringToFront();
+    label2.BringToFront();
+    
+    doorLeft_G.BringToFront();
+    doorRight_G.BringToFront();
+    doorLeft_1.BringToFront();
+    doorRight_1.BringToFront();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         public void btn_1_click(object sender, EventArgs e)
         {
-            soundButtonPress?.Play(); // PLAY BUTTON SOUND
+            // BUTTON PRESS SOUND REMOVED
 
             lift.SetState(new MovingUpState());
             btn_1.BackColor = Color.LightGreen;
@@ -167,7 +248,7 @@ namespace ElevatorControlSystem.UI
 
         public void btn_G_click(object sender, EventArgs e)
         {
-            soundButtonPress?.Play(); // PLAY BUTTON SOUND beep
+            // BUTTON PRESS SOUND REMOVED
 
             lift.SetState(new MovingDownState());
             btn_G.BackColor = Color.LightGreen;
@@ -190,7 +271,7 @@ namespace ElevatorControlSystem.UI
 
         private void btn_Open_Click(object sender, EventArgs e)
         {
-            soundButtonPress?.Play(); // PLAY BUTTON SOUND
+            // BUTTON PRESS SOUND REMOVED
 
             isOpening = true;
             isClosing = false;
@@ -204,7 +285,7 @@ namespace ElevatorControlSystem.UI
 
         private void btn_Close_Click(object sender, EventArgs e)
         {
-            soundButtonPress?.Play(); // PLAY BUTTON SOUND
+            // BUTTON PRESS SOUND REMOVED
 
             btn_Open.BackColor = Color.White;
             isOpening = false;
@@ -228,7 +309,7 @@ namespace ElevatorControlSystem.UI
 
         private void btnCall2_Click(object sender, EventArgs e)
         {
-            soundButtonPress?.Play(); // PLAY BUTTON SOUND
+            // BUTTON PRESS SOUND REMOVED
 
             btnCall1.BackColor = Color.White;
             lift.SetState(new MovingUpState());
@@ -238,7 +319,7 @@ namespace ElevatorControlSystem.UI
 
         private void btnCall1_Click(object sender, EventArgs e)
         {
-            soundButtonPress?.Play(); // PLAY BUTTON SOUND
+            // BUTTON PRESS SOUND REMOVED
 
             btnCall2.BackColor = Color.White;
             lift.SetState(new MovingDownState());
@@ -305,3 +386,4 @@ namespace ElevatorControlSystem.UI
         }
     }
 }
+
