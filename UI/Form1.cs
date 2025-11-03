@@ -36,6 +36,9 @@ namespace ElevatorControlSystem.UI
         public SoundPlayer soundDoorOpen;
         public SoundPlayer soundDoorClose;
 
+        // PICTUREBOX FOR ANIMATED GIFS
+        private PictureBox pbFloorIndicator;
+
         public Form1()
         {
             InitializeComponent();
@@ -76,7 +79,6 @@ namespace ElevatorControlSystem.UI
                 soundDoorClose = new SoundPlayer("Resources/door_close.wav");
 
                 // Load sounds into memory for faster playback
-            
                 soundLiftMoving.Load();
                 soundLiftArrived.Load();
                 soundDoorOpen.Load();
@@ -144,6 +146,147 @@ namespace ElevatorControlSystem.UI
             InitialDoorRightX = doorRight_G.Left;
 
             dbContext.LoadLogsFromDB(dt, dataGridViewLogs);
+            
+            // CREATE PICTUREBOX FOR ANIMATED GIFS
+            pbFloorIndicator = new PictureBox();
+            
+            // MAKE IT SMALLER - 60% of panel size and CENTERED
+            int gifWidth = (int)(panel1.ClientSize.Width * 0.6);
+            int gifHeight = (int)(panel1.ClientSize.Height * 0.6);
+            int gifX = (panel1.ClientSize.Width - gifWidth) / 2;
+            int gifY = (panel1.ClientSize.Height - gifHeight) / 2;
+            
+            pbFloorIndicator.Location = new Point(gifX, gifY);
+            pbFloorIndicator.Size = new Size(gifWidth, gifHeight);
+            pbFloorIndicator.SizeMode = PictureBoxSizeMode.Zoom;
+            pbFloorIndicator.BackColor = Color.Transparent; // Make background transparent
+            pbFloorIndicator.Visible = false;
+            
+            // Add to panel1 (same parent as lblFloorDisplay)
+            panel1.Controls.Add(pbFloorIndicator);
+            
+            // Bring it to the VERY FRONT
+            pbFloorIndicator.BringToFront();
+            
+            // SET INITIAL FLOOR DISPLAY TO 1 (Ground Floor)
+            lblFloorDisplay.Text = "1";
+            lblFloorDisplay.Visible = true;
+            lblFloorDisplay.BringToFront();
+        }
+
+        // Show floor number
+        public void ShowFloorNumber(int floor)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => ShowFloorNumber(floor)));
+                return;
+            }
+            
+            // Dispose image when switching back to text
+            if (pbFloorIndicator.Image != null)
+            {
+                pbFloorIndicator.Image.Dispose();
+                pbFloorIndicator.Image = null;
+            }
+            
+            // HIDE PICTUREBOX
+            pbFloorIndicator.Visible = false;
+            pbFloorIndicator.SendToBack();
+            
+            // SHOW LABEL
+            lblFloorDisplay.Text = floor.ToString();
+            lblFloorDisplay.Visible = true;
+            lblFloorDisplay.BringToFront();
+            
+            // Refresh
+            panel1.Refresh();
+            
+            logEvents($"Display: Showing floor {floor}");
+        }
+
+        // Show moving up arrow
+        public void ShowMovingUp()
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(ShowMovingUp));
+                return;
+            }
+            
+            try
+            {
+                // HIDE THE LABEL FIRST
+                lblFloorDisplay.Visible = false;
+                lblFloorDisplay.SendToBack();
+                
+                // Dispose previous image to avoid memory leak
+                if (pbFloorIndicator.Image != null)
+                {
+                    pbFloorIndicator.Image.Dispose();
+                }
+                
+                // Load the GIF
+                pbFloorIndicator.Image = Image.FromFile("Resources/arrowup.gif");
+                pbFloorIndicator.BackColor = Color.Black;
+                
+                // SHOW IT AND BRING TO FRONT
+                pbFloorIndicator.Visible = true;
+                pbFloorIndicator.BringToFront();
+                
+                // Force the panel and picturebox to refresh
+                panel1.Refresh();
+                pbFloorIndicator.Refresh();
+                
+                logEvents("Display: Showing UP arrow");
+            }
+            catch (Exception ex)
+            {
+                // Show the error in log instead
+                logEvents($"Error loading up arrow: {ex.Message}");
+            }
+        }
+
+        // Show moving down arrow
+        public void ShowMovingDown()
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(ShowMovingDown));
+                return;
+            }
+            
+            try
+            {
+                // HIDE THE LABEL FIRST
+                lblFloorDisplay.Visible = false;
+                lblFloorDisplay.SendToBack();
+                
+                // Dispose previous image to avoid memory leak
+                if (pbFloorIndicator.Image != null)
+                {
+                    pbFloorIndicator.Image.Dispose();
+                }
+                
+                // Load the GIF
+                pbFloorIndicator.Image = Image.FromFile("Resources/arrowdown.gif");
+                pbFloorIndicator.BackColor = Color.Black;
+                
+                // SHOW IT AND BRING TO FRONT
+                pbFloorIndicator.Visible = true;
+                pbFloorIndicator.BringToFront();
+                
+                // Force the panel and picturebox to refresh
+                panel1.Refresh();
+                pbFloorIndicator.Refresh();
+                
+                logEvents("Display: Showing DOWN arrow");
+            }
+            catch (Exception ex)
+            {
+                // Show the error in log instead
+                logEvents($"Error loading down arrow: {ex.Message}");
+            }
         }
 
         public void UpdateFloorDisplay(int floor)
@@ -151,87 +294,44 @@ namespace ElevatorControlSystem.UI
             lblFloorDisplay.Text = floor.ToString();
         }
 
+        // SEND CABIN BEHIND FLOORS (when moving)
+        public void SendCabinBehindFloors()
+        {
+            mainElevator.SendToBack();
+            cabinDoor.SendToBack();
+            mainElevator.SendToBack();
+            
+            pictureBox1.BringToFront();
+            pictureBox2.BringToFront();
+            
+            // BRING LABELS TO FRONT so they're not covered
+            label1.BringToFront();
+            label2.BringToFront();
+            
+            doorLeft_G.BringToFront();
+            doorRight_G.BringToFront();
+            doorLeft_1.BringToFront();
+            doorRight_1.BringToFront();
+        }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// SEND CABIN BEHIND FLOORS (when moving)
-public void SendCabinBehindFloors()
-{
-    mainElevator.SendToBack();
-    cabinDoor.SendToBack();
-    mainElevator.SendToBack();
-    
-    pictureBox1.BringToFront();
-    pictureBox2.BringToFront();
-    
-    // BRING LABELS TO FRONT so they're not covered
-    label1.BringToFront();
-    label2.BringToFront();
-    
-    doorLeft_G.BringToFront();
-    doorRight_G.BringToFront();
-    doorLeft_1.BringToFront();
-    doorRight_1.BringToFront();
-}
-
-// BRING CABIN IN FRONT OF FLOORS (when stopped)
-public void BringCabinInFrontOfFloors()
-{
-    pictureBox1.SendToBack();
-    pictureBox2.SendToBack();
-    
-    mainElevator.BringToFront();
-    cabinDoor.BringToFront();
-    
-    // BRING LABELS TO FRONT here too
-    label1.BringToFront();
-    label2.BringToFront();
-    
-    doorLeft_G.BringToFront();
-    doorRight_G.BringToFront();
-    doorLeft_1.BringToFront();
-    doorRight_1.BringToFront();
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        // BRING CABIN IN FRONT OF FLOORS (when stopped)
+        public void BringCabinInFrontOfFloors()
+        {
+            pictureBox1.SendToBack();
+            pictureBox2.SendToBack();
+            
+            mainElevator.BringToFront();
+            cabinDoor.BringToFront();
+            
+            // BRING LABELS TO FRONT here too
+            label1.BringToFront();
+            label2.BringToFront();
+            
+            doorLeft_G.BringToFront();
+            doorRight_G.BringToFront();
+            doorLeft_1.BringToFront();
+            doorRight_1.BringToFront();
+        }
 
         public void btn_1_click(object sender, EventArgs e)
         {
@@ -386,4 +486,13 @@ public void BringCabinInFrontOfFloors()
         }
     }
 }
+
+
+
+
+
+
+
+
+
 
